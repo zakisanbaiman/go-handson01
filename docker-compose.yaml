@@ -1,0 +1,16 @@
+version: "3.9"
+services:
+  app:
+    # コンテナ名
+    image: gotodo
+    # ビルドコンテナ
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - target=dev
+    # ホストマシンのディレクトリをマウント
+    volumes:
+      - .:/app
+    ports:
+      - "18000:80"

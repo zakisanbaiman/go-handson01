@@ -14,10 +14,10 @@ import (
 func run(ctx context.Context, l net.Listener) error {
 	s := &http.Server{
 		Handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			fmt.Fprintf(w, "Hello, %s! 🚀 LIVE HOT RELOAD TEST!3 🚀", r.URL.Path[1:])
+			fmt.Fprintf(w, "Hello, %s! 🚀 LIVE HOT RELOAD TEST!4 🚀", r.URL.Path[1:])
 		}),
 	}
-	eg, ctx := errgroup.WithContext(ctx)	
+	eg, ctx := errgroup.WithContext(ctx)
 
 	// 別ゴルーチンでHTTPサーバを起動する
 	eg.Go(func() error {

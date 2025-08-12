@@ -1,5 +1,5 @@
 # ビルド用のコンテナ
-FROM golang:1.23-bullseye as deploy-builer
+FROM golang:1.23-bullseye AS deploy-builer
 
 WORKDIR /app
 
@@ -11,7 +11,7 @@ RUN go build -trimpath -ldflags "-w -s" -o app
 
 #--------------------------------
 # デプロイ用のコンテナ（本番環境でのアプリ起動）
-FROM debian:bullseye-slim as deploy
+FROM debian:bullseye-slim AS deploy
 
 RUN apt-get update
 
@@ -23,7 +23,7 @@ CMD ["./app", "8080"]
 
 #--------------------------------
 # ローカル開発環境で利用するホットリロード環境
-FROM golang:1.23-bullseye as dev
+FROM golang:1.23-bullseye AS dev
 
 WORKDIR /app
 

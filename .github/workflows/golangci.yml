@@ -16,7 +16,5 @@ jobs:
       - name: Run golangci-lint
         uses: golangci/golangci-lint-action@v3
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          golangci_lint_flgs: "--config=./.golangci.yml ./..."
-          fail_on_error: true
-          reporter: "github-pr-review"
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          args: "--config=./.golangci.yml ./..."

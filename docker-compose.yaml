@@ -9,8 +9,12 @@ services:
       dockerfile: Dockerfile
       args:
         - target=dev
+    environment:
+      - TODO_ENV=dev
+      - PORT=8080
     # ホストマシンのディレクトリをマウント
     volumes:
       - .:/app
     ports:
-      - "18000:80"
+      - "18080:8080"
+      

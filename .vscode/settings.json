@@ -1,0 +1,20 @@
+{
+    "go.toolsManagement.autoUpdate": true,
+    "go.useLanguageServer": true,
+    "go.buildOnSave": "package",
+    "go.lintOnSave": "package",
+    "go.vetOnSave": "package",
+    "go.formatTool": "goimports",
+    "go.gocodeAutoBuild": false,
+    "go.testTimeout": "30s",
+    "go.gopath": "",
+    "go.goroot": "",
+    "go.inferGopath": false,
+    "go.enableCodeLens": {
+        "references": true,
+        "runtest": true
+    },
+    "go.testEnvVars": {},
+    "go.testFlags": ["-v"],
+    "go.coverOnTestPackage": false
+}

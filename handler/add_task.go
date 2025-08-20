@@ -41,7 +41,7 @@ func (h *AddTaskHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		Status:    entity.TaskStatusTodo,
 		CreatedAt: time.Now(),
 	}
-	id, err := store.Tasks.Add(task)
+	id, err := h.Store.Add(task)
 	if err != nil {
 		RespondJSON(ctx, w, &ErrResponse{
 			Message: "failed to add task",

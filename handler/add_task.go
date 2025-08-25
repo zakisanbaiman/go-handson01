@@ -10,12 +10,12 @@ import (
 	"github.com/zakisanbaiman/go-handson01/store"
 )
 
-type AddTaskHandler struct {
+type AddTask struct {
 	Store     *store.TaskStore
 	Validator *validator.Validate
 }
 
-func (h *AddTaskHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (h *AddTask) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	var b struct {
 		Title string `json:"title" validate:"required,max=100"`

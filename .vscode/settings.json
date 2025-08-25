@@ -16,5 +16,6 @@
     },
     "go.testEnvVars": {},
     "go.testFlags": ["-v"],
-    "go.coverOnTestPackage": false
+    "go.coverOnTestPackage": false,
+    "workbench.colorTheme": "Solarized Dark"
 }

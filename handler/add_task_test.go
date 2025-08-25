@@ -48,7 +48,7 @@ func TestAddTaskHandler(t *testing.T) {
 			r := httptest.NewRequest(http.MethodPost, "/tasks", bytes.NewReader(testutil.LoadFile(t, tt.reqFile)))
 			r.Header.Set("Content-Type", "application/json")
 
-			sut := AddTaskHandler{
+			sut := AddTask{
 				Store: &store.TaskStore{
 					Tasks: make(map[entity.TaskID]*entity.Task),
 				},

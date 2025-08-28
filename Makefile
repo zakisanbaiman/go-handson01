@@ -23,5 +23,11 @@ ps: ## Show docker ps
 test: ## Run test
 	go test -race -shuffle=on ./...
 
+migrate: ## Run migrate
+	mysqldef -u todo -p todo -h 127.0.0.1 -P 33306 todo < _tools/mysql/schema.sql
+
+dry-migrate: ## Run dry migrate
+	mysqldef -u todo -p todo -h 127.0.0.1 -P 33306 todo < _tools/mysql/schema.sql --dry-run
+
 help: ## Show help
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'

@@ -48,24 +48,25 @@ func prepareTasks(ctx context.Context, t *testing.T, con Execer) entity.Tasks {
 		t.Fatalf("failed to delete tasks: %s", err)
 	}
 
+	fixedTime := time.Date(2023, 1, 1, 12, 0, 0, 0, time.UTC)
 	wants := entity.Tasks{
 		{
 			Title:      "test1",
 			Status:     entity.TaskStatusTodo,
-			CreatedAt:  time.Now(),
-			ModifiedAt: time.Now(),
+			CreatedAt:  fixedTime,
+			ModifiedAt: fixedTime,
 		},
 		{
 			Title:      "test2",
 			Status:     entity.TaskStatusDone,
-			CreatedAt:  time.Now(),
-			ModifiedAt: time.Now(),
+			CreatedAt:  fixedTime,
+			ModifiedAt: fixedTime,
 		},
 		{
 			Title:      "test3",
 			Status:     entity.TaskStatusTodo,
-			CreatedAt:  time.Now(),
-			ModifiedAt: time.Now(),
+			CreatedAt:  fixedTime,
+			ModifiedAt: fixedTime,
 		},
 	}
 

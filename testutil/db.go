@@ -14,7 +14,7 @@ func OpenDBForTest(t *testing.T) *sqlx.DB {
 
 	port := 33306
 	if _, defined := os.LookupEnv("CI"); defined {
-		port = 3306
+		port = 33306
 	}
 
 	db, err := sql.Open(

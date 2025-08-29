@@ -26,7 +26,6 @@ jobs:
           MYSQL_PASSWORD: todo
         volumes:
           - todo-db-data:/var/lib/mysql
-          - ./_tools/mysql/conf.d:/etc/mysql/conf.d:cached
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v4

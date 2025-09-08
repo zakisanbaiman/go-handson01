@@ -1,16 +1,33 @@
 package main
 
 import (
+	"context"
 	"io"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	_ "github.com/go-sql-driver/mysql"
+	"github.com/zakisanbaiman/go-handson01/config"
 )
 
 func TestNewMux(t *testing.T) {
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest("GET", "/health", nil)
-	sut := NewMux()
+	cfg := &config.Config{
+		Env:        "test",
+		Port:       8080,
+		DBHost:     "localhost",
+		DBPort:     3306,
+		DBUser:     "test",
+		DBPassword: "test",
+		DBName:     "test",
+	}
+	sut, cleanup, err := NewMux(context.Background(), cfg)
+	if err != nil {
+		t.Fatalf("failed to create mux: %v", err)
+	}
+	defer cleanup()
 	sut.ServeHTTP(w, r)
 	resp := w.Result()
 	t.Cleanup(func() {

@@ -72,7 +72,13 @@ func main() {
 		os.Exit(1)
 	}
 
-	mux := NewMux()
+	mux, cleanup, err := NewMux(context.Background(), cfg)
+	if err != nil {
+		log.Printf("failed to create mux: %v", err)
+		os.Exit(1)
+	}
+	defer cleanup()
+
 	server := NewServer(l, mux)
 
 	eg, ctx := errgroup.WithContext(context.Background())

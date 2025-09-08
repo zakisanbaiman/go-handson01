@@ -2,11 +2,14 @@ package handler
 
 import (
 	"bytes"
+	"context"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
 	"github.com/go-playground/validator/v10"
+	"github.com/zakisanbaiman/go-handson01/clock"
 	"github.com/zakisanbaiman/go-handson01/entity"
 	"github.com/zakisanbaiman/go-handson01/store"
 	"github.com/zakisanbaiman/go-handson01/testutil"
@@ -48,9 +51,17 @@ func TestAddTaskHandler(t *testing.T) {
 			r := httptest.NewRequest(http.MethodPost, "/tasks", bytes.NewReader(testutil.LoadFile(t, tt.reqFile)))
 			r.Header.Set("Content-Type", "application/json")
 
+			moq := &AddTaskServiceMock{}
+			moq.AddTaskFunc = func(ctx context.Context, title string) (*entity.Task, error) {
+				if tt.want.status == http.StatusCreated {
+					return &entity.Task{ID: 1}, nil
+				}
+				return nil, errors.New("error from mock")
+			}
 			sut := AddTask{
-				Store: &store.TaskStore{
-					Tasks: make(map[entity.TaskID]*entity.Task),
+				Service: moq,
+				Repo: &store.Repository{
+					Clocker: clock.RealClocker{},
 				},
 				Validator: validator.New(),
 			}

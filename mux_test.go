@@ -18,10 +18,10 @@ func TestNewMux(t *testing.T) {
 		Env:        "test",
 		Port:       8080,
 		DBHost:     "localhost",
-		DBPort:     3306,
-		DBUser:     "test",
-		DBPassword: "test",
-		DBName:     "test",
+		DBPort:     33306,
+		DBUser:     "todo",
+		DBPassword: "todo",
+		DBName:     "todo",
 	}
 	sut, cleanup, err := NewMux(context.Background(), cfg)
 	if err != nil {

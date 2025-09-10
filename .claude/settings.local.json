@@ -8,7 +8,8 @@
       "mcp__serena__find_symbol",
       "mcp__serena__find_file",
       "mcp__serena__search_for_pattern",
-      "Bash(golangci-lint:*)"
+      "Bash(golangci-lint:*)",
+      "Bash(DOCKER_HOST=unix:///Users/n_suzaki/.orbstack/run/docker.sock act -W .github/workflows/golangci.yml --container-architecture linux/amd64)"
     ],
     "deny": [],
     "ask": []

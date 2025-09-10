@@ -1,4 +1,4 @@
-.PHONY: help build build-local up down logs ps test
+.PHONY: help build build-local up down logs ps test lint ci-local
 .DEFAULT_GOAL := help
 
 DOCKER_TAG := latest
@@ -31,6 +31,12 @@ dry-migrate: ## Run dry migrate
 
 generate:
 	go generate ./...
+
+lint: ## Run golangci-lint locally
+	golangci-lint run ./...
+
+ci-local: ## Run GitHub Actions locally using act
+	DOCKER_HOST=unix:///Users/n_suzaki/.orbstack/run/docker.sock act -W .github/workflows/golangci.yml --container-architecture linux/amd64
 
 help: ## Show help
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'

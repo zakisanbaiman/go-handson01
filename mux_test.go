@@ -31,7 +31,7 @@ func TestNewMux(t *testing.T) {
 	sut.ServeHTTP(w, r)
 	resp := w.Result()
 	t.Cleanup(func() {
-		resp.Body.Close()
+		_ = resp.Body.Close()
 	})
 
 	if resp.StatusCode != http.StatusOK {

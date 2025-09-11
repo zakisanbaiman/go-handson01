@@ -17,7 +17,7 @@ func TestServer_Run(t *testing.T) {
 		t.Fatalf("failed to listen port %v", err)
 	}
 	defer func() {
-		l.Close()
+		_ = l.Close()
 	}()
 
 	// cancelableなcontextを作成
@@ -26,7 +26,7 @@ func TestServer_Run(t *testing.T) {
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("/hello", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintf(w, "Hello, %s!", r.URL.Path[1:])
+		_, _ = fmt.Fprintf(w, "Hello, %s!", r.URL.Path[1:])
 	})
 
 	eg.Go(func() error {
@@ -42,7 +42,7 @@ func TestServer_Run(t *testing.T) {
 		t.Errorf("failed to get: %+v", err)
 	}
 
-	defer rsp.Body.Close()
+	defer func() { _ = rsp.Body.Close() }()
 	got, err := io.ReadAll(rsp.Body)
 	if err != nil {
 		t.Errorf("failed to read body: %+v", err)

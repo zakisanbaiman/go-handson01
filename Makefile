@@ -1,4 +1,4 @@
-.PHONY: help build build-local up down logs ps test lint ci-local
+.PHONY: help build build-local up down logs ps test test-coverage lint ci-local
 .DEFAULT_GOAL := help
 
 DOCKER_TAG := latest
@@ -23,6 +23,10 @@ ps: ## Show docker ps
 test: ## Run test
 	go test -race -shuffle=on ./...
 
+test-coverage: ## Run test with coverage
+	go test -race -shuffle=on -coverprofile=coverage.out ./...
+	go tool cover -html=coverage.out -o coverage.html
+
 migrate: ## Run migrate
 	mysqldef -u todo -p todo -h 127.0.0.1 -P 33306 todo < _tools/mysql/schema.sql
 
@@ -36,7 +40,7 @@ lint: ## Run golangci-lint locally
 	golangci-lint run ./...
 
 ci-local: ## Run GitHub Actions locally using act
-	DOCKER_HOST=unix:///Users/n_suzaki/.orbstack/run/docker.sock act -W .github/workflows/golangci.yml --container-architecture linux/amd64
+	DOCKER_HOST=unix://$(HOME)/.orbstack/run/docker.sock act -W .github/workflows/golangci.yml --container-architecture linux/amd64
 
 help: ## Show help
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'

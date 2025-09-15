@@ -34,3 +34,32 @@ go.work.sum
 # Build artifacts
 go-handson01
 tmp/
+
+# Security/Auth files (秘密鍵、証明書、認証ファイル)
+*.pem
+*.key
+*.crt
+*.cer
+*.der
+*.p7b
+*.p7c
+*.p12
+*.pfx
+*.pkcs12
+*.jks
+*.keystore
+*.truststore
+auth/
+cert/
+certs/
+keys/
+pki/
+secrets/
+ssl/
+tls/
+jwt_secret*
+*.secret
+
+# Serena cache files (開発ツールのキャッシュ)
+.serena/cache/
+

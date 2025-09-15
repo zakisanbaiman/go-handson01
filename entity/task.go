@@ -1,8 +1,27 @@
 package entity
 
-import "time"
+import (
+	"fmt"
+	"strconv"
+	"time"
+)
 
 type TaskID int64
+
+// MarshalBinary implements encoding.BinaryMarshaler
+func (t TaskID) MarshalBinary() ([]byte, error) {
+	return []byte(strconv.FormatInt(int64(t), 10)), nil
+}
+
+// UnmarshalBinary implements encoding.BinaryUnmarshaler
+func (t *TaskID) UnmarshalBinary(data []byte) error {
+	id, err := strconv.ParseInt(string(data), 10, 64)
+	if err != nil {
+		return fmt.Errorf("failed to unmarshal TaskID: %w", err)
+	}
+	*t = TaskID(id)
+	return nil
+}
 type TaskStatus string
 
 const (

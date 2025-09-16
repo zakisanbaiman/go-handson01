@@ -49,8 +49,7 @@ tmp/
 *.jks
 *.keystore
 *.truststore
-auth/
-cert/
+auth/cert/
 certs/
 keys/
 pki/

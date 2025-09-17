@@ -4,8 +4,11 @@ import (
 	"context"
 	_ "embed"
 	"fmt"
+	"time"
 
-	"github.com/yumemi-inc/go-oidc/pkg/jwt"
+	"github.com/google/uuid"
+	"github.com/lestrrat-go/jwx/jwt"
+	"github.com/lestrrat-go/jwx/v2/jwk"
 	"github.com/zakisanbaiman/go-handson01/clock"
 	"github.com/zakisanbaiman/go-handson01/entity"
 )
@@ -17,7 +20,7 @@ var rawPriKey []byte
 var rawPubKey []byte
 
 type JWTer struct {
-	PrivateKey, PublicKey jwt.Key
+	PrivateKey, PublicKey jwk.Key
 	Store                 Store
 	Clocker               clock.Clocker
 }
@@ -46,10 +49,38 @@ func NewJWTer(s Store) (*JWTer, error) {
 	return j, nil
 }
 
-func parse(rawKey []byte) (jwt.Key, error) {
-	key, err := jwt.ParseKey(rawKey)
+func parse(rawKey []byte) (jwk.Key, error) {
+	key, err := jwk.ParseKey(rawKey)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse key: %w", err)
 	}
 	return key, nil
+}
+
+const (
+	RoleKey     = "role"
+	UserNameKey = "name"
+)
+
+func (j *JWTer) GenerateToken(ctx context.Context, user entity.User) ([]byte, error) {
+	tok, err := jwt.NewBuilder().
+		JwtID(uuid.New().String()).
+		Issuer("access_token").
+		IssuedAt(j.Clocker.Now()).
+		Expiration(j.Clocker.Now().Add(30*time.Minute)).
+		Claim(RoleKey, user.Role).
+		Claim(UserNameKey, user.Name).
+		Build()
+	if err != nil {
+		return nil, fmt.Errorf("failed to build token: %w", err)
+	}
+	if err := j.Store.Save(ctx, tok.JwtID(), user.ID); err != nil {
+		return nil, fmt.Errorf("failed to save token: %w", err)
+	}
+
+	signed, err := jwt.Sign(tok, jwt.WithKey(jwt.RS256, j.PrivateKey))
+	if err != nil {
+		return nil, fmt.Errorf("failed to sign token: %w", err)
+	}
+	return signed, nil
 }

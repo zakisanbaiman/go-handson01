@@ -7,8 +7,9 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/lestrrat-go/jwx/jwt"
+	"github.com/lestrrat-go/jwx/v2/jwa"
 	"github.com/lestrrat-go/jwx/v2/jwk"
+	"github.com/lestrrat-go/jwx/v2/jwt"
 	"github.com/zakisanbaiman/go-handson01/clock"
 	"github.com/zakisanbaiman/go-handson01/entity"
 )
@@ -78,7 +79,7 @@ func (j *JWTer) GenerateToken(ctx context.Context, user entity.User) ([]byte, er
 		return nil, fmt.Errorf("failed to save token: %w", err)
 	}
 
-	signed, err := jwt.Sign(tok, jwt.WithKey(jwt.RS256, j.PrivateKey))
+	signed, err := jwt.Sign(tok, jwt.WithKey(jwa.RS256, j.PrivateKey))
 	if err != nil {
 		return nil, fmt.Errorf("failed to sign token: %w", err)
 	}

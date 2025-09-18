@@ -6,7 +6,6 @@ import (
 )
 
 func TestEmbed(t *testing.T) {
-	t.Skip("Skipping TestEmbed as it references local PEM files")
 	want := []byte("-----BEGIN PUBLIC KEY-----")
 	if !bytes.Contains(rawPubKey, want) {
 		t.Errorf("rawPubKey = %v, want %v", rawPubKey, want)

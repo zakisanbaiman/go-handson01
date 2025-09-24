@@ -51,7 +51,7 @@ func NewJWTer(s Store) (*JWTer, error) {
 }
 
 func parse(rawKey []byte) (jwk.Key, error) {
-	key, err := jwk.ParseKey(rawKey)
+	key, err := jwk.ParseKey(rawKey, jwk.WithPEM(true))
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse key: %w", err)
 	}

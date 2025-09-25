@@ -4,6 +4,7 @@ import (
 	"context"
 	_ "embed"
 	"fmt"
+	"net/http"
 	"time"
 
 	"github.com/google/uuid"
@@ -26,13 +27,15 @@ type JWTer struct {
 	Clocker               clock.Clocker
 }
 
+// ここからは新たにJWTを発行〜保存
+
 //go:generate go run github.com/matryer/moq -out moq_test.go . Store
 type Store interface {
 	Save(ctx context.Context, key string, userID entity.UserID) error
 	Load(ctx context.Context, key string) (entity.UserID, error)
 }
 
-func NewJWTer(s Store) (*JWTer, error) {
+func NewJWTer(s Store, c clock.Clocker) (*JWTer, error) {
 	j := &JWTer{Store: s}
 	privateKey, err := parse(rawPriKey)
 	if err != nil {
@@ -45,7 +48,7 @@ func NewJWTer(s Store) (*JWTer, error) {
 
 	j.PrivateKey = privateKey
 	j.PublicKey = publicKey
-	j.Clocker = clock.RealClocker{}
+	j.Clocker = c
 
 	return j, nil
 }
@@ -84,4 +87,24 @@ func (j *JWTer) GenerateToken(ctx context.Context, user entity.User) ([]byte, er
 		return nil, fmt.Errorf("failed to sign token: %w", err)
 	}
 	return signed, nil
+}
+
+// ここからはJWTを取得
+
+func (j *JWTer) GetToken(ctx context.Context, r *http.Request) (jwt.Token, error) {
+	token, err := jwt.ParseRequest(
+		r,
+		jwt.WithKey(jwa.RS256, j.PublicKey),
+		jwt.WithValidate(false),
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse token: %w", err)
+	}
+	if err := jwt.Validate(token, jwt.WithClock(j.Clocker)); err != nil {
+		return nil, fmt.Errorf("failed to validate token: %w", err)
+	}
+	if _, err := j.Store.Load(ctx, token.JwtID()); err != nil {
+		return nil, fmt.Errorf("failed to load token: %w", err)
+	}
+	return token, nil
 }

@@ -30,6 +30,7 @@ func TestEmbed(t *testing.T) {
 }
 
 func TestJWTer_GenerateToken(t *testing.T) {
+	t.Skip("don't want to upload pem files to GitHub")
 	cts := context.Background()
 	moq := &StoreMock{}
 	wantID := entity.UserID(20)

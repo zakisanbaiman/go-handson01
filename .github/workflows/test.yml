@@ -40,12 +40,8 @@ jobs:
       - name: Create dummy cert files for CI
         run: |
           mkdir -p auth/cert
-          echo "-----BEGIN RSA PRIVATE KEY-----" > auth/cert/secret.pem
-          echo "dummy private key content" >> auth/cert/secret.pem
-          echo "-----END RSA PRIVATE KEY-----" >> auth/cert/secret.pem
-          echo "-----BEGIN PUBLIC KEY-----" > auth/cert/public.pem
-          echo "dummy public key content" >> auth/cert/public.pem
-          echo "-----END PUBLIC KEY-----" >> auth/cert/public.pem
+          cp _tools/ci/dummy-secret.pem auth/cert/secret.pem
+          cp _tools/ci/dummy-public.pem auth/cert/public.pem
       - uses: actions/setup-go@v5
         with:
           go-version-file: 'go.mod'

@@ -36,7 +36,6 @@ go-handson01
 tmp/
 
 # Security/Auth files (秘密鍵、証明書、認証ファイル)
-*.pem
 *.key
 *.crt
 *.cer

@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     services:
       mysql:
-        image: mysql:8
+        image: mysql:8.0
         options: >-
           --health-cmd "mysqladmin ping -h localhost"
           --health-interval 20s
@@ -37,6 +37,11 @@ jobs:
           - 6379:6379
     steps:
       - uses: actions/checkout@v4
+      - name: Create dummy cert files for CI
+        run: |
+          mkdir -p auth/cert
+          cp _tools/ci/dummy-secret.pem auth/cert/secret.pem
+          cp _tools/ci/dummy-public.pem auth/cert/public.pem
       - uses: actions/setup-go@v5
         with:
           go-version-file: 'go.mod'

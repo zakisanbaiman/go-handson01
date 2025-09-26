@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"testing"
 	"time"
 
@@ -30,7 +31,10 @@ func TestEmbed(t *testing.T) {
 }
 
 func TestJWTer_GenerateToken(t *testing.T) {
-	t.Skip("don't want to upload pem files to GitHub")
+	if os.Getenv("CI") != "" {
+		t.Skip("Skipping JWT test in CI environment")
+	}
+
 	cts := context.Background()
 	moq := &StoreMock{}
 	wantID := entity.UserID(20)
@@ -57,6 +61,10 @@ func TestJWTer_GenerateToken(t *testing.T) {
 }
 
 func TestJWTer_GetToken(t *testing.T) {
+	if os.Getenv("CI") != "" {
+		t.Skip("Skipping JWT test in CI environment")
+	}
+
 	t.Parallel()
 
 	c := clock.FixedClocker{}

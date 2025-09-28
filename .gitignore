@@ -49,6 +49,7 @@ tmp/
 *.keystore
 *.truststore
 auth/cert/
+cert/
 certs/
 keys/
 pki/

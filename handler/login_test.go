@@ -33,27 +33,25 @@ func TestLogin_ServeHTTP(t *testing.T) {
 			},
 			want: want{
 				status:  http.StatusOK,
-				repFile: "testdata/login/ok_req.json.golden",
+				repFile: "testdata/login/ok_rsp.json.golden",
 			},
 		},
 		"badRequest": {
-			repFile: "testdata/login/ng.json.golden",
-			moq: moq{
-				err: errors.New("error"),
-			},
+			repFile: "testdata/login/bad_req.json.golden",
+			moq:     moq{},
 			want: want{
 				status:  http.StatusBadRequest,
-				repFile: "testdata/login/ng.json.golden",
+				repFile: "testdata/login/bad_rsp.json.golden",
 			},
 		},
 		"internalServerError": {
 			repFile: "testdata/login/internal_server_error.json.golden",
 			moq: moq{
-				err: errors.New("error"),
+				err: errors.New("error from mock"),
 			},
 			want: want{
 				status:  http.StatusInternalServerError,
-				repFile: "testdata/login/internal_server_error.json.golden",
+				repFile: "testdata/login/internal_server_error_rsp.json.golden",
 			},
 		},
 	}

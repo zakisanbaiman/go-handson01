@@ -40,8 +40,9 @@ jobs:
       - name: Create dummy cert files for CI
         run: |
           mkdir -p auth/cert
-          cp _tools/ci/dummy-secret.pem auth/cert/secret.pem
-          cp _tools/ci/dummy-public.pem auth/cert/public.pem
+          # Generate dummy RSA key pair for testing
+          openssl genrsa -out auth/cert/secret.pem 2048
+          openssl rsa -in auth/cert/secret.pem -pubout -out auth/cert/public.pem
       - uses: actions/setup-go@v5
         with:
           go-version-file: 'go.mod'

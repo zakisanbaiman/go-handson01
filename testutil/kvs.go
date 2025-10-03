@@ -16,7 +16,7 @@ func OpenRedisForTest(t *testing.T) *redis.Client {
 	port := 36379
 
 	if _, defined := os.LookupEnv("CI"); defined {
-		port = 6379
+		port = 36379
 	}
 
 	client := redis.NewClient(&redis.Options{

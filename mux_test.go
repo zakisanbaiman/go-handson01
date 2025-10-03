@@ -17,11 +17,13 @@ func TestNewMux(t *testing.T) {
 	cfg := &config.Config{
 		Env:        "test",
 		Port:       8080,
-		DBHost:     "localhost",
+		DBHost:     "127.0.0.1",
 		DBPort:     33306,
 		DBUser:     "todo",
 		DBPassword: "todo",
 		DBName:     "todo",
+		RedisHost:  "127.0.0.1",
+		RedisPort:  36379,
 	}
 	sut, cleanup, err := NewMux(context.Background(), cfg)
 	if err != nil {

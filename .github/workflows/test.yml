@@ -34,20 +34,21 @@ jobs:
           --health-timeout 5s
           --health-retries 5
         ports:
-          - 6379:6379
+          - 36379:6379
     steps:
       - uses: actions/checkout@v4
       - name: Create dummy cert files for CI
         run: |
           mkdir -p auth/cert
-          cp _tools/ci/dummy-secret.pem auth/cert/secret.pem
-          cp _tools/ci/dummy-public.pem auth/cert/public.pem
+          # Generate dummy RSA key pair for testing in PKCS#1 format
+          openssl genrsa -out auth/cert/secret.pem 2048
+          openssl rsa -in auth/cert/secret.pem -pubout -out auth/cert/public.pem
       - uses: actions/setup-go@v5
         with:
           go-version-file: 'go.mod'
       - run : |
           go install github.com/sqldef/sqldef/cmd/mysqldef@latest
           mysqldef -u todo -p todo -h 127.0.0.1 -P 33306 todo < _tools/mysql/schema.sql
-      - run: go test -race -shuffle=on ./... -coverprofile=coverage.out
+      - run: go test -race -shuffle=on -p=1 ./... -coverprofile=coverage.out
       - name: report coverage
         uses: k1LoW/octocov-action@v1

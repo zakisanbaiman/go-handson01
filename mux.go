@@ -6,6 +6,7 @@ import (
 
 	"github.com/go-chi/chi"
 	"github.com/go-playground/validator/v10"
+	"github.com/zakisanbaiman/go-handson01/auth"
 	"github.com/zakisanbaiman/go-handson01/clock"
 	"github.com/zakisanbaiman/go-handson01/config"
 	"github.com/zakisanbaiman/go-handson01/handler"
@@ -43,6 +44,23 @@ func NewMux(ctx context.Context, cfg *config.Config) (http.Handler, func(), erro
 		Validator: v,
 	}
 	mux.Post("/users", ru.ServeHTTP)
+
+	clocker := clock.RealClocker{}
+	repo := store.Repository{Clocker: clocker}
+	rcli, err := store.NewKVS(ctx, cfg)
+	if err != nil {
+		return nil, cleanup, err
+	}
+	jwt, err := auth.NewJWTer(rcli, clocker)
+	if err != nil {
+		return nil, cleanup, err
+	}
+
+	login := &handler.Login{
+		Service:   &service.Login{DB: db, Repo: &repo, TokenGenerator: jwt},
+		Validator: v,
+	}
+	mux.Post("/login", login.ServeHTTP)
 
 	return mux, cleanup, nil
 }

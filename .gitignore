@@ -62,3 +62,6 @@ jwt_secret*
 # Serena cache files (開発ツールのキャッシュ)
 .serena/cache/
 
+# Claude settings (個人設定ファイル)
+.claude/settings.local.json
+

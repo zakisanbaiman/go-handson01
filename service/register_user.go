@@ -19,6 +19,9 @@ func (r *RegisterUser) RegisterUser(ctx context.Context, name string, password s
 		Password: password,
 		Role:     role,
 	}
+	if err := user.HashPassword(); err != nil {
+		return nil, fmt.Errorf("failed to hash password: %w", err)
+	}
 	if err := r.Repo.RegisterUser(ctx, r.DB, user); err != nil {
 		return nil, fmt.Errorf("failed to register user: %w", err)
 	}

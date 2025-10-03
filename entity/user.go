@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"strconv"
 	"time"
+
+	"golang.org/x/crypto/bcrypt"
 )
 
 type UserID int64
@@ -30,4 +32,17 @@ type User struct {
 	Role       string    `json:"role" db:"role"`
 	CreatedAt  time.Time `json:"created_at" db:"created_at"`
 	ModifiedAt time.Time `json:"modified_at" db:"modified_at"`
+}
+
+func (u *User) HashPassword() error {
+	hashed, err := bcrypt.GenerateFromPassword([]byte(u.Password), bcrypt.DefaultCost)
+	if err != nil {
+		return fmt.Errorf("failed to hash password: %w", err)
+	}
+	u.Password = string(hashed)
+	return nil
+}
+
+func (u *User) ComparePassword(password string) error {
+	return bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(password))
 }

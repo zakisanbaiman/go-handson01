@@ -34,7 +34,7 @@ jobs:
           --health-timeout 5s
           --health-retries 5
         ports:
-          - 6379:6379
+          - 36379:6379
     steps:
       - uses: actions/checkout@v4
       - name: Create dummy cert files for CI
@@ -48,6 +48,6 @@ jobs:
       - run : |
           go install github.com/sqldef/sqldef/cmd/mysqldef@latest
           mysqldef -u todo -p todo -h 127.0.0.1 -P 33306 todo < _tools/mysql/schema.sql
-      - run: go test -race -shuffle=on ./... -coverprofile=coverage.out
+      - run: go test -race -shuffle=on -p=1 ./... -coverprofile=coverage.out
       - name: report coverage
         uses: k1LoW/octocov-action@v1

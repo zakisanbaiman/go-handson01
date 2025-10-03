@@ -21,7 +21,7 @@ var (
 )
 
 func New(ctx context.Context, cfg *config.Config) (*sqlx.DB, func(), error) {
-	db, err := sql.Open("mysql", fmt.Sprintf("%s:%s@tcp(%s:%d)/%s",
+	db, err := sql.Open("mysql", fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?parseTime=true&loc=UTC&timeout=30s&charset=utf8mb4",
 		cfg.DBUser, cfg.DBPassword, cfg.DBHost, cfg.DBPort, cfg.DBName))
 	if err != nil {
 		return nil, nil, err

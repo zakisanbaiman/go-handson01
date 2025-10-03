@@ -5,31 +5,24 @@ import (
 	"fmt"
 
 	"github.com/jmoiron/sqlx"
-	"github.com/zakisanbaiman/go-handson01/auth"
-	"github.com/zakisanbaiman/go-handson01/entity"
-	"github.com/zakisanbaiman/go-handson01/store"
 )
 
 type Login struct {
-	DB    *sqlx.DB
-	Repo  *store.Repository
-	JWTer *auth.JWTer
+	DB             *sqlx.DB
+	Repo           UserGetter
+	TokenGenerator TokenGenerator
 }
 
 func (l *Login) Login(ctx context.Context, userName, password string) (string, error) {
-	// ユーザー認証のロジックをここに実装
-	// 1. ユーザー名でユーザーを検索
-	// 2. パスワードを検証
-	// 3. JWTトークンを生成して返す
-
-	// TODO: 実際の認証ロジックを実装
-	user := entity.User{
-		ID:   1,
-		Name: userName,
-		Role: "user",
+	user, err := l.Repo.GetUser(ctx, l.DB, userName)
+	if err != nil {
+		return "", fmt.Errorf("failed to get user: %w", err)
+	}
+	if err := user.ComparePassword(password); err != nil {
+		return "", fmt.Errorf("failed to compare password: %w", err)
 	}
 
-	token, err := l.JWTer.GenerateToken(ctx, user)
+	token, err := l.TokenGenerator.GenerateToken(ctx, *user)
 	if err != nil {
 		return "", fmt.Errorf("failed to generate token: %w", err)
 	}

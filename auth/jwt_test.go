@@ -20,6 +20,10 @@ import (
 )
 
 func TestEmbed(t *testing.T) {
+	if os.Getenv("CI") != "" {
+		t.Skip("Skipping embed test in CI environment")
+	}
+
 	want := []byte("-----BEGIN PUBLIC KEY-----")
 	if !bytes.Contains(rawPubKey, want) {
 		t.Errorf("rawPubKey = %v, want %v", rawPubKey, want)

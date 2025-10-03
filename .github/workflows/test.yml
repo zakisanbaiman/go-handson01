@@ -40,7 +40,7 @@ jobs:
       - name: Create dummy cert files for CI
         run: |
           mkdir -p auth/cert
-          # Generate dummy RSA key pair for testing
+          # Generate dummy RSA key pair for testing in PKCS#1 format
           openssl genrsa -out auth/cert/secret.pem 2048
           openssl rsa -in auth/cert/secret.pem -pubout -out auth/cert/public.pem
       - uses: actions/setup-go@v5

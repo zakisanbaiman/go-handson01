@@ -17,9 +17,10 @@ func (r *Repository) ListTasks(
 		status,
 		created_at,
 		modified_at
-	FROM tasks;`
+	FROM tasks
+	WHERE user_id = ?;`
 
-	if err := db.SelectContext(ctx, &tasks, sql); err != nil {
+	if err := db.SelectContext(ctx, &tasks, sql, userID); err != nil {
 		return nil, err
 	}
 

@@ -19,7 +19,13 @@ func TestRepository_ListTasks(t *testing.T) {
 	t.Parallel()
 	ctx := context.Background()
 
-	tx, err := testutil.OpenDBForTest(t).BeginTxx(ctx, nil)
+	db := testutil.OpenDBForTest(t)
+
+	// テストデータをクリーンアップ
+	_, _ = db.ExecContext(ctx, "DELETE FROM tasks")
+	_, _ = db.ExecContext(ctx, "DELETE FROM users")
+
+	tx, err := db.BeginTxx(ctx, nil)
 
 	t.Cleanup(func() {
 		_ = tx.Rollback()
@@ -53,6 +59,7 @@ func TestRepository_AddTask(t *testing.T) {
 	var wantID int64 = 20
 
 	okTask := &entity.Task{
+		UserID:     1,
 		Title:      "ok test",
 		Status:     entity.TaskStatusTodo,
 		CreatedAt:  c.Now(),
@@ -65,8 +72,8 @@ func TestRepository_AddTask(t *testing.T) {
 	}
 	t.Cleanup(func() { _ = db.Close() })
 
-	mock.ExpectExec("INSERT INTO tasks \\(title, status, created_at, modified_at\\) VALUES \\(\\?, \\?, \\?, \\?\\);").
-		WithArgs(okTask.Title, okTask.Status, okTask.CreatedAt, okTask.ModifiedAt).
+	mock.ExpectExec("INSERT INTO tasks \\(user_id, title, status, created_at, modified_at\\) VALUES \\(\\?, \\?, \\?, \\?, \\?\\);").
+		WithArgs(okTask.UserID, okTask.Title, okTask.Status, okTask.CreatedAt, okTask.ModifiedAt).
 		WillReturnResult(sqlmock.NewResult(wantID, 1))
 
 	xdb := sqlx.NewDb(db, "mysql")
@@ -81,9 +88,9 @@ func prepareUser(ctx context.Context, t *testing.T, db Execer) entity.UserID {
 
 	user := fixture.User(nil)
 	result, err := db.ExecContext(ctx,
-		`INSERT INTO users (name, email, password, created_at, modified_at) VALUES
+		`INSERT INTO users (name, password, role, created_at, modified_at) VALUES
 		(?, ?, ?, ?, ?);`,
-		user.ID, user.Name, user.Role, user.CreatedAt, user.ModifiedAt,
+		user.Name, user.Password, user.Role, user.CreatedAt, user.ModifiedAt,
 	)
 	if err != nil {
 		t.Fatalf("failed to insert user: %s", err)
@@ -153,5 +160,10 @@ func prepareTasks(ctx context.Context, t *testing.T, con Execer) (entity.UserID,
 	tasks[0].ID = entity.TaskID(id)
 	tasks[1].ID = entity.TaskID(id + 1)
 	tasks[2].ID = entity.TaskID(id + 2)
+
+	// wantsにIDを設定
+	wants[0].ID = tasks[0].ID
+	wants[1].ID = tasks[2].ID
+
 	return userID, wants
 }

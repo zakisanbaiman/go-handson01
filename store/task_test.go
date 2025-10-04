@@ -3,7 +3,6 @@ package store
 import (
 	"context"
 	"testing"
-	"time"
 
 	"github.com/DATA-DOG/go-sqlmock"
 	_ "github.com/go-sql-driver/mysql"
@@ -12,10 +11,12 @@ import (
 	"github.com/zakisanbaiman/go-handson01/clock"
 	"github.com/zakisanbaiman/go-handson01/entity"
 	"github.com/zakisanbaiman/go-handson01/testutil"
+	"github.com/zakisanbaiman/go-handson01/testutil/fixture"
 )
 
 // RDBMSを使ったテスト
 func TestRepository_ListTasks(t *testing.T) {
+	t.Parallel()
 	ctx := context.Background()
 
 	tx, err := testutil.OpenDBForTest(t).BeginTxx(ctx, nil)
@@ -28,10 +29,10 @@ func TestRepository_ListTasks(t *testing.T) {
 		t.Fatalf("failed to begin tx: %s", err)
 	}
 
-	wants := prepareTasks(ctx, t, tx)
+	wantUserID, wants := prepareTasks(ctx, t, tx)
 
 	sut := &Repository{}
-	gots, err := sut.ListTasks(ctx, tx)
+	gots, err := sut.ListTasks(ctx, tx, wantUserID)
 	if err != nil {
 		t.Fatalf("failed to list tasks: %s", err)
 	}
@@ -39,60 +40,6 @@ func TestRepository_ListTasks(t *testing.T) {
 	if diff := cmp.Diff(wants, gots); diff != "" {
 		t.Errorf("ListTasks() mismatch (-want +got):\n%s", diff)
 	}
-}
-
-func prepareTasks(ctx context.Context, t *testing.T, con Execer) entity.Tasks {
-	t.Helper()
-
-	if _, err := con.ExecContext(ctx, "DELETE FROM tasks"); err != nil {
-		t.Fatalf("failed to delete tasks: %s", err)
-	}
-
-	fixedTime := time.Date(2023, 1, 1, 12, 0, 0, 0, time.UTC)
-	wants := entity.Tasks{
-		{
-			Title:      "test1",
-			Status:     entity.TaskStatusTodo,
-			CreatedAt:  fixedTime,
-			ModifiedAt: fixedTime,
-		},
-		{
-			Title:      "test2",
-			Status:     entity.TaskStatusDone,
-			CreatedAt:  fixedTime,
-			ModifiedAt: fixedTime,
-		},
-		{
-			Title:      "test3",
-			Status:     entity.TaskStatusTodo,
-			CreatedAt:  fixedTime,
-			ModifiedAt: fixedTime,
-		},
-	}
-
-	result, err := con.ExecContext(ctx,
-		`INSERT INTO tasks (title, status, created_at, modified_at) VALUES
-		(?, ?, ?, ?),
-		(?, ?, ?, ?),
-		(?, ?, ?, ?);`,
-		wants[0].Title, wants[0].Status, wants[0].CreatedAt, wants[0].ModifiedAt,
-		wants[1].Title, wants[1].Status, wants[1].CreatedAt, wants[1].ModifiedAt,
-		wants[2].Title, wants[2].Status, wants[2].CreatedAt, wants[2].ModifiedAt,
-	)
-	if err != nil {
-		t.Fatalf("failed to insert tasks: %s", err)
-	}
-
-	id, err := result.LastInsertId()
-	if err != nil {
-		t.Fatalf("failed to get last insert id: %s", err)
-	}
-
-	wants[0].ID = entity.TaskID(id)
-	wants[1].ID = entity.TaskID(id + 1)
-	wants[2].ID = entity.TaskID(id + 2)
-
-	return wants
 }
 
 // sqlmockを使ったテスト(RDBMSを使わない)
@@ -127,4 +74,84 @@ func TestRepository_AddTask(t *testing.T) {
 	if err := r.AddTask(ctx, xdb, okTask); err != nil {
 		t.Errorf("failed to add task: %s", err)
 	}
+}
+
+func prepareUser(ctx context.Context, t *testing.T, db Execer) entity.UserID {
+	t.Helper()
+
+	user := fixture.User(nil)
+	result, err := db.ExecContext(ctx,
+		`INSERT INTO users (name, email, password, created_at, modified_at) VALUES
+		(?, ?, ?, ?, ?);`,
+		user.ID, user.Name, user.Role, user.CreatedAt, user.ModifiedAt,
+	)
+	if err != nil {
+		t.Fatalf("failed to insert user: %s", err)
+	}
+
+	id, err := result.LastInsertId()
+	if err != nil {
+		t.Fatalf("failed to get last insert id: %s", err)
+	}
+
+	return entity.UserID(id)
+}
+
+func prepareTasks(ctx context.Context, t *testing.T, con Execer) (entity.UserID, entity.Tasks) {
+	t.Helper()
+
+	userID := prepareUser(ctx, t, con)
+	ohterUserID := prepareUser(ctx, t, con)
+	c := clock.FixedClocker{}
+	wants := entity.Tasks{
+		{
+			UserID:     userID,
+			Title:      "test1",
+			Status:     entity.TaskStatusTodo,
+			CreatedAt:  c.Now(),
+			ModifiedAt: c.Now(),
+		},
+		{
+			UserID:     userID,
+			Title:      "test2",
+			Status:     entity.TaskStatusDone,
+			CreatedAt:  c.Now(),
+			ModifiedAt: c.Now(),
+		},
+	}
+
+	tasks := entity.Tasks{
+		wants[0],
+		{
+			UserID:     ohterUserID,
+			Title:      "test3 not want",
+			Status:     entity.TaskStatusTodo,
+			CreatedAt:  c.Now(),
+			ModifiedAt: c.Now(),
+		},
+		wants[1],
+	}
+
+	result, err := con.ExecContext(ctx,
+		`INSERT INTO tasks (user_id, title, status, created_at, modified_at) VALUES
+		(?, ?, ?, ?, ?),
+		(?, ?, ?, ?, ?),
+		(?, ?, ?, ?, ?);`,
+		tasks[0].UserID, tasks[0].Title, tasks[0].Status, tasks[0].CreatedAt, tasks[0].ModifiedAt,
+		tasks[1].UserID, tasks[1].Title, tasks[1].Status, tasks[1].CreatedAt, tasks[1].ModifiedAt,
+		tasks[2].UserID, tasks[2].Title, tasks[2].Status, tasks[2].CreatedAt, tasks[2].ModifiedAt,
+	)
+	if err != nil {
+		t.Fatalf("failed to insert tasks: %s", err)
+	}
+
+	id, err := result.LastInsertId()
+	if err != nil {
+		t.Fatalf("failed to get last insert id: %s", err)
+	}
+
+	tasks[0].ID = entity.TaskID(id)
+	tasks[1].ID = entity.TaskID(id + 1)
+	tasks[2].ID = entity.TaskID(id + 2)
+	return userID, wants
 }

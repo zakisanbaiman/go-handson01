@@ -6,19 +6,19 @@ build: ## Build docker image to deploy
 	docker build -t zakisanbaiman/gotodo:${DOCKER_TAG} --target deploy .
 
 build-local: ## Build docker image for local development
-	docker compose build --no-cache
+	docker-compose build --no-cache
 
 up: ## Run docker container
-	docker compose up -d
+	docker-compose up -d
 
 down: ## Stop docker container
-	docker compose down
+	docker-compose down
 
 logs: ## Show logs
-	docker compose logs -f
+	docker-compose logs -f
 
 ps: ## Show docker ps
-	docker compose ps
+	docker-compose ps
 
 test: ## Run test
 	go test -race -shuffle=on ./...

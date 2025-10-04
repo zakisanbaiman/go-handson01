@@ -21,6 +21,8 @@ func User(setter func(*entity.User)) *entity.User {
 		ModifiedAt: time.Now(),
 	}
 
-	setter(user)
+	if setter != nil {
+		setter(user)
+	}
 	return user
 }

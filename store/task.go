@@ -7,18 +7,20 @@ import (
 )
 
 func (r *Repository) ListTasks(
-	ctx context.Context, db Queryer,
+	ctx context.Context, db Queryer, userID entity.UserID,
 ) (entity.Tasks, error) {
 	tasks := entity.Tasks{}
 	sql := `SELECT
 		id,
+		user_id,
 		title,
 		status,
 		created_at,
 		modified_at
-	FROM tasks;`
+	FROM tasks
+	WHERE user_id = ?;`
 
-	if err := db.SelectContext(ctx, &tasks, sql); err != nil {
+	if err := db.SelectContext(ctx, &tasks, sql, userID); err != nil {
 		return nil, err
 	}
 
@@ -32,10 +34,10 @@ func (r *Repository) AddTask(
 	t.ModifiedAt = r.Clocker.Now()
 
 	sql := `INSERT INTO tasks
-		(title, status, created_at, modified_at) VALUES (?, ?, ?, ?);`
+		(user_id, title, status, created_at, modified_at) VALUES (?, ?, ?, ?, ?);`
 
 	result, err := db.ExecContext(
-		ctx, sql, t.Title, t.Status, t.CreatedAt, t.ModifiedAt,
+		ctx, sql, t.UserID, t.Title, t.Status, t.CreatedAt, t.ModifiedAt,
 	)
 	if err != nil {
 		return err

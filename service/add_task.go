@@ -7,12 +7,11 @@ import (
 	"github.com/jmoiron/sqlx"
 	"github.com/zakisanbaiman/go-handson01/auth"
 	"github.com/zakisanbaiman/go-handson01/entity"
-	"github.com/zakisanbaiman/go-handson01/store"
 )
 
 type AddTask struct {
 	DB   *sqlx.DB
-	Repo *store.Repository
+	Repo TaskAdder
 }
 
 func (a *AddTask) AddTask(ctx context.Context, title string) (*entity.Task, error) {

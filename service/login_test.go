@@ -34,7 +34,9 @@ func TestLogin_Login(t *testing.T) {
 					Password: "password123", // テスト用に平文で設定
 					Role:     "user",
 				}
-				user.HashPassword() // ハッシュ化
+				if err := user.HashPassword(); err != nil {
+					panic(err) // テスト用なのでpanicで十分
+				}
 				return user
 			}(),
 			mockToken: []byte("mock-jwt-token"),
@@ -59,7 +61,9 @@ func TestLogin_Login(t *testing.T) {
 					Password: "password123", // テスト用に平文で設定
 					Role:     "user",
 				}
-				user.HashPassword() // ハッシュ化
+				if err := user.HashPassword(); err != nil {
+					panic(err) // テスト用なのでpanicで十分
+				}
 				return user
 			}(),
 			wantError: true,
@@ -75,7 +79,9 @@ func TestLogin_Login(t *testing.T) {
 					Password: "password123", // テスト用に平文で設定
 					Role:     "user",
 				}
-				user.HashPassword() // ハッシュ化
+				if err := user.HashPassword(); err != nil {
+					panic(err) // テスト用なのでpanicで十分
+				}
 				return user
 			}(),
 			mockTokenError: errors.New("token generation failed"),

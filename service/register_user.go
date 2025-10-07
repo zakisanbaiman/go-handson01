@@ -10,7 +10,12 @@ import (
 
 type RegisterUser struct {
 	DB   store.Execer
-	Repo *store.Repository
+	Repo RegisterUserRepository
+}
+
+// RegisterUserRepository は RegisterUser のテスト用インターフェース
+type RegisterUserRepository interface {
+	RegisterUser(ctx context.Context, db store.Execer, user *entity.User) error
 }
 
 func (r *RegisterUser) RegisterUser(ctx context.Context, name string, password string, role string) (*entity.User, error) {

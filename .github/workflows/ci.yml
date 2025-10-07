@@ -1,0 +1,170 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: 'go.mod'
+          cache: true
+          cache-dependency-path: 'go.sum'
+      
+      - name: Cache Go modules
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/go-build
+            ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+      
+      - name: Download dependencies
+        run: go mod download
+      
+      - name: Create dummy cert files for CI
+        run: |
+          mkdir -p auth/cert
+          echo "-----BEGIN RSA PRIVATE KEY-----" > auth/cert/secret.pem
+          echo "dummy private key content" >> auth/cert/secret.pem
+          echo "-----END RSA PRIVATE KEY-----" >> auth/cert/secret.pem
+          echo "-----BEGIN PUBLIC KEY-----" > auth/cert/public.pem
+          echo "dummy public key content" >> auth/cert/public.pem
+          echo "-----END PUBLIC KEY-----" >> auth/cert/public.pem
+      
+      - name: Install golangci-lint
+        run: |
+          curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v2.5.0
+      
+      - name: Run golangci-lint
+        run: golangci-lint run ./...
+
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.0
+        options: >-
+          --health-cmd "mysqladmin ping -h localhost"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 3
+        ports:
+          - 33306:3306
+        env:
+          MYSQL_ALLOW_EMPTY_PASSWORD: yes
+          MYSQL_DATABASE: todo
+          MYSQL_USER: todo
+          MYSQL_PASSWORD: todo
+      redis:
+        image: redis:latest
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 3
+        ports:
+          - 36379:6379
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: 'go.mod'
+          cache: true
+          cache-dependency-path: 'go.sum'
+      
+      - name: Cache Go modules
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/go-build
+            ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+      
+      - name: Download dependencies
+        run: go mod download
+      
+      - name: Create dummy cert files for CI
+        run: |
+          mkdir -p auth/cert
+          openssl genrsa -out auth/cert/secret.pem 2048
+          openssl rsa -in auth/cert/secret.pem -pubout -out auth/cert/public.pem
+      
+      - name: Install mysqldef
+        run: go install github.com/sqldef/sqldef/cmd/mysqldef@latest
+      
+      - name: Setup database schema
+        run: mysqldef -u todo -p todo -h 127.0.0.1 -P 33306 todo < _tools/mysql/schema.sql
+      
+      - name: Run tests with coverage
+        run: go test -race -shuffle=on -coverprofile=coverage.out ./...
+        env:
+          TODO_ENV: dev
+          TODO_DB_HOST: 127.0.0.1
+          TODO_DB_PORT: 33306
+          TODO_DB_USER: todo
+          TODO_DB_PASSWORD: todo
+          TODO_DB_NAME: todo
+          TODO_REDIS_HOST: 127.0.0.1
+          TODO_REDIS_PORT: 36379
+      
+      - name: Report coverage
+        uses: k1LoW/octocov-action@v1
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: 'go.mod'
+          cache: true
+          cache-dependency-path: 'go.sum'
+      
+      - name: Cache Go modules
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/go-build
+            ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+      
+      - name: Download dependencies
+        run: go mod download
+      
+      - name: Create dummy cert files for CI
+        run: |
+          mkdir -p auth/cert
+          echo "-----BEGIN RSA PRIVATE KEY-----" > auth/cert/secret.pem
+          echo "dummy private key content" >> auth/cert/secret.pem
+          echo "-----END RSA PRIVATE KEY-----" >> auth/cert/secret.pem
+          echo "-----BEGIN PUBLIC KEY-----" > auth/cert/public.pem
+          echo "dummy public key content" >> auth/cert/public.pem
+          echo "-----END PUBLIC KEY-----" >> auth/cert/public.pem
+      
+      - name: Build
+        run: go build -v ./...
+      
+      - name: Build binary
+        run: go build -o go-handson01 .

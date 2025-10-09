@@ -16,6 +16,10 @@ import (
 
 func NewMux(ctx context.Context, cfg *config.Config) (http.Handler, func(), error) {
 	mux := chi.NewRouter()
+
+	// CORSミドルウェアを適用
+	mux.Use(handler.CORSMiddleware(cfg.GetCORSOptions()))
+
 	mux.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		_, _ = w.Write([]byte(`{"status": "ok"}`))
